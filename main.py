@@ -3,8 +3,7 @@ import tkinter as tk
 
 root = tk.Tk()
 
-result_listbox = tk.Listbox(root)
-listbox_vars = []
+LISTBOX_VARS = {}
 
 
 class AssistWindow(tk.Toplevel):
@@ -50,73 +49,82 @@ class AssistWindow(tk.Toplevel):
         lbl = tk.Label(self, text=lbl_txt)
         lbl.grid(row=2, column=column)
         entry = tk.Entry(self, font='Arial 20', width=6, textvariable=entry_var)
-        entry.grid(row=3, column=column)
+        entry.grid(row=3, column=column, sticky='ew')
         if column == 0:
             separator = tk.Label(self, text='/')
             separator.grid(row=3, column=1)
         add_btn = tk.Button(self, text=btn_txt, command=btn_fx, font='Arial 14')
-        add_btn.grid(row=4, column=column)
+        add_btn.grid(row=4, column=column, sticky='ew')
         
     def add_func(self):
-        lst_ind = 1 if self.cell == 'Развороты' else 0
         order_name, book_qty, page_qty = self.order_name.get(), self.book_qty.get(), self.pages_qty.get()
         if not order_name or not book_qty or not page_qty:
             return
         string = f'{order_name} - {book_qty}/{page_qty}'
-        listbox_vars[lst_ind].insert(0, string)
+        LISTBOX_VARS[self.cell].insert(0, string)
         self.comparison_func()
         self.destroy()
 
-    def comparison_func(self):
-        left = listbox_vars[0].get(0, listbox_vars[0].size())
-        right = listbox_vars[1].get(0, listbox_vars[0].size())
-        comp = set(left) & set(right)
+    @staticmethod
+    def comparison_func():
+        left_box = LISTBOX_VARS['Обложки'].get(0, LISTBOX_VARS['Обложки'].size())
+        right_box = LISTBOX_VARS['Развороты'].get(0, LISTBOX_VARS['Развороты'].size())
+        comp = set(left_box) & set(right_box)
         if comp:
-            result_listbox.insert(0, *comp)
-            listbox_vars[0].delete(left.index(*comp))
-            listbox_vars[1].delete(right.index(*comp))
-
+            LISTBOX_VARS['result'].insert(0, *comp)
+            LISTBOX_VARS['Обложки'].delete(left_box.index(*comp))
+            LISTBOX_VARS['Развороты'].delete(right_box.index(*comp))
 
 
 class WorkFrame:
     """Объект для хранения информации о парных виджетов и функции работы с ними"""
     def __init__(self, lbl, side):
         self.lbl = lbl
-        self.side = side
+        self.main_frame = tk.Frame(root)
+        self.main_frame.pack(expand=1, fill=tk.BOTH, side=side)
 
     def show_work_frame(self):
-        frame = tk.Frame(root)
+        frame = tk.Frame(self.main_frame)
         label = tk.Label(frame, text=self.lbl)
         label.pack(expand=1, fill=tk.X)
         list_box = tk.Listbox(frame, height=20)
-        listbox_vars.append(list_box)
-        list_box.pack(expand=1, fill=tk.BOTH)
-        button_frame = tk.Frame(frame)
-        button_frame.pack(expand=1, fill=tk.X)
+        LISTBOX_VARS[self.lbl] = list_box
+        list_box.pack(expand=1, fill=tk.BOTH, side=tk.LEFT)
+        scrollbar = tk.Scrollbar(frame, orient="vertical", command=list_box.yview)
+        scrollbar.pack(fill='y', side=tk.RIGHT)
+        list_box["yscrollcommand"] = scrollbar.set
+        frame.pack(expand=1, fill=tk.X)
+        button_frame = tk.Frame(self.main_frame)
         plus_button = tk.Button(button_frame, text='+', width=4, font='arial 12 bold', command=self.plus_func)
         plus_button.pack(side=tk.LEFT, expand=1, fill=tk.X)
         minus_button = tk.Button(button_frame, text='–', width=4, font='arial 12 bold', command=self.minus_func)
         minus_button.pack(side=tk.RIGHT, expand=1, fill=tk.X)
-        frame.pack(side=self.side, expand=1, fill=tk.X)
+        button_frame.pack(expand=1, fill=tk.X)
 
     def plus_func(self):
         AssistWindow(root, self.lbl)
         
     def minus_func(self):
-        lst_ind = 1 if self.lbl == 'Развороты' else 0
-        elem_ind = listbox_vars[lst_ind].curselection()
+        elem_ind = LISTBOX_VARS[self.lbl].curselection()
         if elem_ind:
-            listbox_vars[lst_ind].delete(*elem_ind)
+            LISTBOX_VARS[self.lbl].delete(*elem_ind)
 
 
 def minus_btn():
-    elem_ind = result_listbox.curselection()
+    elem_ind = LISTBOX_VARS['result'].curselection()
     if elem_ind:
-        result_listbox.delete(*elem_ind)
+        LISTBOX_VARS['result'].delete(*elem_ind)
 
 
 def show_result_frame():
-    result_listbox.pack(expand=1, fill=tk.BOTH)
+    frame = tk.Frame(root)
+    result_listbox = tk.Listbox(frame)
+    LISTBOX_VARS['result'] = result_listbox
+    result_listbox.pack(expand=1, fill=tk.BOTH, side=tk.LEFT)
+    scrollbar = tk.Scrollbar(frame, orient="vertical", command=result_listbox.yview)
+    scrollbar.pack(fill='y', side=tk.RIGHT)
+    result_listbox["yscrollcommand"] = scrollbar.set
+    frame.pack(expand=1, fill=tk.BOTH)
     minus_button = tk.Button(root, text='–', width=4, font='arial 12 bold', command=minus_btn)
     minus_button.pack(anchor=tk.E)
 
