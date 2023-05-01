@@ -9,23 +9,63 @@ listbox_vars = []
 
 class AssistWindow(tk.Toplevel):
     """Вспомогательное окно для занесения информации"""
-    def __init__(self, parent_root):
+    def __init__(self, parent_root, cell):
         super().__init__(master=parent_root)
+        self.cell = cell
+        self.order_name = tk.StringVar()
+        self.book_qty = tk.StringVar()
+        self.pages_qty = tk.StringVar()
         self.__main()
-
+        
     def __main(self):
         self.config(border=1, relief='solid')
-        self.show_entry_frames()
+        self.show_order_entry_frame()
+        self.show_quantity_frame(0, 'Количество', self.book_qty, 'Добавить', self.add_func)
+        self.show_quantity_frame(2, 'Развороты', self.pages_qty, 'Отмена', self.destroy)
+        self.to_desctop_center()
+        self.resizable(False, False)
         self.grab_set()
         self.focus_set()
         self.wait_window()
-        pass
 
-    def show_entry_frames(self):
+    def to_desctop_center(self):
+        self.update_idletasks()
+        parent_width = root.winfo_width()
+        parent_height = root.winfo_height()
+        parent_place_x = root.winfo_x()  
+        parent_place_y = root.winfo_y()
+        child_width = self.winfo_width()
+        child_height = self.winfo_height()
+        place_x = ((parent_width - child_width) // 2) + parent_place_x + 10
+        place_y = ((parent_height - child_height) // 2) + parent_place_y - 100
+        self.geometry(f"+{place_x}+{place_y}")
+
+    def show_order_entry_frame(self):
         lbl1 = tk.Label(self, text='Введите номер заказа')
-        lbl1.pack(anchor=tk.NW)
-        entry1 = tk.Entry(self)
-        entry1.pack()
+        lbl1.grid(row=0, column=0, columnspan=3)
+        entry1 = tk.Entry(self, font='Arial 20', width=14, textvariable=self.order_name)
+        entry1.grid(row=1, column=0, columnspan=3)
+
+    def show_quantity_frame(self, column, lbl_txt, entry_var, btn_txt, btn_fx):
+        lbl = tk.Label(self, text=lbl_txt)
+        lbl.grid(row=2, column=column)
+        entry = tk.Entry(self, font='Arial 20', width=6, textvariable=entry_var)
+        entry.grid(row=3, column=column)
+        if column == 0:
+            separator = tk.Label(self, text='/')
+            separator.grid(row=3, column=1)
+        add_btn = tk.Button(self, text=btn_txt, command=btn_fx, font='Arial 14')
+        add_btn.grid(row=4, column=column)
+
+    def add_func(self):
+        lst_ind = 1 if self.cell == 'Развороты' else 0
+        order_name, book_qty, page_qty = self.order_name.get(), self.book_qty.get(), self.pages_qty.get()
+        if not order_name or not book_qty or not page_qty:
+            return
+        string = f'{order_name} - {book_qty}/{page_qty}'
+        listbox_vars[lst_ind].insert(0, string)
+        self.destroy()
+
 
 
 class WorkFrame:
@@ -50,12 +90,10 @@ class WorkFrame:
         frame.pack(side=self.side, expand=1, fill=tk.X)
 
     def plus_func(self):
-        AssistWindow(root)
+        AssistWindow(root, self.lbl)
         
     def minus_func(self):
-        lst_ind = 0
-        if self.lbl == 'Развороты':
-            lst_ind = 1
+        lst_ind = 1 if self.lbl == 'Развороты' else 0
         elem_ind = listbox_vars[lst_ind].curselection()
         if elem_ind:
             listbox_vars[lst_ind].delete(*elem_ind)
