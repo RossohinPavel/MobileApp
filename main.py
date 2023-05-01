@@ -56,7 +56,7 @@ class AssistWindow(tk.Toplevel):
             separator.grid(row=3, column=1)
         add_btn = tk.Button(self, text=btn_txt, command=btn_fx, font='Arial 14')
         add_btn.grid(row=4, column=column)
-
+        
     def add_func(self):
         lst_ind = 1 if self.cell == 'Развороты' else 0
         order_name, book_qty, page_qty = self.order_name.get(), self.book_qty.get(), self.pages_qty.get()
@@ -64,7 +64,17 @@ class AssistWindow(tk.Toplevel):
             return
         string = f'{order_name} - {book_qty}/{page_qty}'
         listbox_vars[lst_ind].insert(0, string)
+        self.comparison_func()
         self.destroy()
+
+    def comparison_func(self):
+        left = listbox_vars[0].get(0, listbox_vars[0].size())
+        right = listbox_vars[1].get(0, listbox_vars[0].size())
+        comp = set(left) & set(right)
+        if comp:
+            result_listbox.insert(0, *comp)
+            listbox_vars[0].delete(left.index(*comp))
+            listbox_vars[1].delete(right.index(*comp))
 
 
 
@@ -99,9 +109,15 @@ class WorkFrame:
             listbox_vars[lst_ind].delete(*elem_ind)
 
 
+def minus_btn():
+    elem_ind = result_listbox.curselection()
+    if elem_ind:
+        result_listbox.delete(*elem_ind)
+
+
 def show_result_frame():
     result_listbox.pack(expand=1, fill=tk.BOTH)
-    minus_button = tk.Button(root, text='–', width=4, font='arial 12 bold')
+    minus_button = tk.Button(root, text='–', width=4, font='arial 12 bold', command=minus_btn)
     minus_button.pack(anchor=tk.E)
 
 
