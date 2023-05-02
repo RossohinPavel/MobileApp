@@ -84,22 +84,22 @@ class WorkFrame:
         self.main_frame.pack(expand=1, fill=tk.BOTH, side=side)
 
     def show_work_frame(self):
-        frame = tk.Frame(self.main_frame)
-        label = tk.Label(frame, text=self.lbl)
+        label = tk.Label(self.main_frame, text=self.lbl)
         label.pack(expand=1, fill=tk.X)
-        list_box = tk.Listbox(frame, height=20)
-        LISTBOX_VARS[self.lbl] = list_box
-        list_box.pack(expand=1, fill=tk.BOTH, side=tk.LEFT)
-        scrollbar = tk.Scrollbar(frame, orient="vertical", command=list_box.yview)
-        scrollbar.pack(fill='y', side=tk.RIGHT)
-        list_box["yscrollcommand"] = scrollbar.set
-        frame.pack(expand=1, fill=tk.X)
         button_frame = tk.Frame(self.main_frame)
         plus_button = tk.Button(button_frame, text='+', width=4, font='arial 12 bold', command=self.plus_func)
         plus_button.pack(side=tk.LEFT, expand=1, fill=tk.X)
         minus_button = tk.Button(button_frame, text='–', width=4, font='arial 12 bold', command=self.minus_func)
         minus_button.pack(side=tk.RIGHT, expand=1, fill=tk.X)
         button_frame.pack(expand=1, fill=tk.X)
+        frame = tk.Frame(self.main_frame)
+        list_box = tk.Listbox(frame, height=25)
+        LISTBOX_VARS[self.lbl] = list_box
+        list_box.pack(expand=1, fill=tk.BOTH, side=tk.LEFT)
+        scrollbar = tk.Scrollbar(frame, orient="vertical", command=list_box.yview)
+        scrollbar.pack(fill='y', side=tk.RIGHT)
+        list_box["yscrollcommand"] = scrollbar.set
+        frame.pack(expand=1, fill=tk.BOTH)
 
     def plus_func(self):
         AssistWindow(root, self.lbl)
